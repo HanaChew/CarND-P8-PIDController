@@ -1,8 +1,39 @@
 # CarND-Controls-PID
-Self-Driving Car Engineer Nanodegree Program
+---
+## Goal of project
+The ultimate goal of this project is for the car to drive (successfully) around the test track through the implementation of one or more PID controllers.
+
+## Implementation & Theory
+From the data, the CTE or cross-track error is given, which is the distance of the car from where it's supposed to be - ideally the center of the lane, but can also differ based on trajectory calculation. This cross track error is very useful in calculating just how much the car would need to steer in order to go back to its' ideal position.
+
+## PID Controller
+The PID-Controller is made up of 3 components:
+* P - Proportional
+* I - Integratal
+* D - Derivative
+
+### The Proportional component
+This portion is directly proportional to the error measured, and quantified by the proportional gain Kp. This is analogous to the principal of a spring constant, whereby the controller reacts directly to the error given. The term (Kp * pError) should be the largest component in the PID Controller, but is by itself normally insufficient to control the car in this instance.
+Increasing Kp tends to increase the response of the system, however increasing it too much leads to an overshoot and possible instability for e.g.; a higher value will mean larger steering angles used to correct the to distance away from the centerline.
+
+### The Integral component
+As its name suggests, the integral component acts as an integrator, taking into account past values of the instantaneous error and multiplying it by a certain gain constant Ki. It is thus normally the smallest component in a PID controller, but also the part that slows the response down somewhat - or rather, delays it, as the error accumulates over time.
+
+### The Derivative component
+This part takes into account the derivative, or the rate of change of the error over time, in order to predict future errors. The goal of this part of the controller is to eventually reduce the error to zero, and this provides resistance to the entire system.
+A very large derivative gain overdamps the system and slows down the convergence.
+
+### Combined into the PID controller
+Together, the three parts add up to give information on a system based on past, present and future (predicted) states, and allow the correction of this system. The values need to be tuned in order to get a system that works, as values that are too high or too low would lead to instability and cause the car to veer left and right with increasing amplitude, and eventually drive off the track.
+
+## Implementation
+1. The gains for the PID control of the steering were implemented on to the cross-track error (CTE), which is a measure of how far away the car is from the intended waypoints. An initial guess was based on the assumption that the largest contribution would be Kp with 1.0, followed by Kd with 0.1, and then Ki with 0.01 - this resulted in unstable oscillations that grew with time, and it was clear that a number of trials needed to be done manually in order to tune the right gains - even if only for a first draft. A good run was finally achieved with  Kp=0.1, Ki=0.001, Kd=1.0, and a constant throttle setting of 30%. The car never left the track, but did get rather close to the end of the lanes while taking some of the sharp corners.
+
+2. Next, a controller was implemented for the throttle in order to manage the speed. The assumption for the throttle control is that if the steering angle is large, then the speed should then be reduced to account for the turns required. The desired speed should therefore a function of the steering angle of the car - which is a combination of the curve of the track, and any error correction from the CTE that might be happening along the way - and this value was chosen to implement the controller on. For this, the D term was more important than the I term for sure, because if a car sees the tight turns, I want it to think, hey! i need to slow down! So the PID controller is then reduced to a PD controller with a setting of Kp=0.1, Kd=0.1, and this worked well. Setting the maximum throttle input to a 100% unfortunately caused the car to drive a little more erratically even though it stayed on the track (proving the choice of gains was a decent one indeed!), and would definitely work better if the tuning gains are implemented via an automated method such as a twiddle algorithm or so. For the best performance, a maximum throttle input of 70% was chosen since it was more stable for the purposes of this assignment. ;)
+
+3. As an initial starting point, manual implementations of tuning the gains as above are fine, especially since the aims of the assignment are met with the car never leaving the track. But in order to fully optimise the gains, a twiddle algorithm should be applied to obtain better values, and more efficient driving with higher speeds around the track, which would be the next step to implement, and the above results give a good starting point for the implementation of that.
 
 ---
-
 ## Dependencies
 
 * cmake >= 3.5
@@ -19,7 +50,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Run either `./install-mac.sh` or `./install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -33,7 +64,7 @@ Fellow students have put together a guide to Windows set-up for the project [her
 1. Clone this repo.
 2. Make a build directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./pid`. 
+4. Run it: `./pid`.
 
 Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
 
@@ -95,4 +126,3 @@ still be compilable with cmake and make./
 
 ## How to write a README
 A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
