@@ -77,7 +77,11 @@ int main() {
           double throttleValue;
           // Update the Steering Angle Errors at each step & get the Total Values
           throttlePID.UpdateError(fabs(angle));
-          throttleValue = 0.8 - throttlePID.TotalError();
+          throttleValue = 0.7 - throttlePID.TotalError();
+          // just a failsafe to make sure the car doesn't reverse on track
+          if (speed < 20){
+            throttleValue = std::max(0.4, throttleValue);
+          }
 
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steerValue
